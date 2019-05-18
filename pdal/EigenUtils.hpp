@@ -390,6 +390,7 @@ PDAL_DLL Derived padMatrix(const Eigen::MatrixBase<Derived>& d, int r)
   API. It is not currently used in the PDAL codebase itself.
 */
 PDAL_DLL Eigen::MatrixXd pointViewToEigen(const PointView& view);
+PDAL_DLL Eigen::MatrixXd pointViewToEigen(const PointView& view, const std::vector<PointId>& ids);
 
 /**
   Replace NaNs with mean.

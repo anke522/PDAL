@@ -577,6 +577,19 @@ Eigen::MatrixXd pointViewToEigen(const PointView& view)
     return matrix;
 }
 
+Eigen::MatrixXd pointViewToEigen(const PointView& view, const std::vector<PointId>& ids)
+{
+    Eigen::MatrixXd matrix(ids.size(), 3);
+    for (auto const& i : ids)
+    {
+        matrix(i, 0) = view.getFieldAs<double>(Dimension::Id::X, i);
+        matrix(i, 1) = view.getFieldAs<double>(Dimension::Id::Y, i);
+        matrix(i, 2) = view.getFieldAs<double>(Dimension::Id::Z, i);
+    }
+
+    return matrix;
+}
+
 void writeMatrix(Eigen::MatrixXd data, const std::string& filename,
                  const std::string& driver, double cell_size, BOX2D bounds,
                  SpatialReference srs)
