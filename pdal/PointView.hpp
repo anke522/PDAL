@@ -295,6 +295,8 @@ public:
     KD3Index& build3dIndex();
     KD2Index& build2dIndex();
 
+    PointViewPtr demeanPointView();
+
 protected:
     PointTableRef m_pointTable;
     std::deque<PointId> m_index;

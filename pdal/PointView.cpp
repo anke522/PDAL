@@ -33,11 +33,15 @@
 ****************************************************************************/
 
 #include <iomanip>
+#include <numeric>
 
+#include <pdal/EigenUtils.hpp>
 #include <pdal/KDIndex.hpp>
 #include <pdal/PointView.hpp>
 #include <pdal/PointViewIter.hpp>
 #include <pdal/util/Algorithm.hpp>
+
+#include <Eigen/Dense>
 
 namespace pdal
 {
@@ -198,6 +202,30 @@ KD2Index& PointView::build2dIndex()
         m_index2->build();
     }
     return *m_index2.get();
+}
+
+
+PointViewPtr PointView::demeanPointView()
+{
+    using namespace eigen;
+    using namespace Eigen;
+    using namespace Dimension;
+
+    std::vector<PointId> ids(size());
+    std::iota(ids.begin(), ids.end(), 0);
+    Vector3d centroid = computeCentroid(*this, ids);
+    PointViewPtr outView = makeNew();
+
+    for (PointId idx = 0; idx < size(); idx++)
+    {
+        double x = getFieldAs<double>(Id::X, idx) - centroid.x();
+        double y = getFieldAs<double>(Id::Y, idx) - centroid.y();
+        double z = getFieldAs<double>(Id::Z, idx) - centroid.z();
+        outView->setField(Id::X, idx, x);
+        outView->setField(Id::Y, idx, y);
+        outView->setField(Id::Z, idx, z);
+    }
+    return outView;
 }
 
 

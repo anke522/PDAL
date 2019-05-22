@@ -360,3 +360,12 @@ TEST(PointViewDeathTest, out_of_bounds)
     EXPECT_DEATH(point_view->getFieldAs<uint8_t>(Dimension::Id::X, 1), "< m_size");
 }
 #endif
+
+TEST(PointViewTest, demeanTest)
+{
+    PointTable table;
+    PointViewPtr view = makeTestView(table);
+    PointViewPtr demeanView = view->demeanPointView();
+    EXPECT_EQ(-80, demeanView->getFieldAs<double>(Dimension::Id::X, 0));
+    EXPECT_EQ(-800, demeanView->getFieldAs<double>(Dimension::Id::Y, 0));
+}

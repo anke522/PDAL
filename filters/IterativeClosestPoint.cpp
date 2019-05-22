@@ -108,19 +108,7 @@ PointViewPtr IterativeClosestPoint::icp(PointViewPtr fixed,
     Eigen::Matrix4d final_transformation = Eigen::Matrix4d::Identity();
 
     // demean the fixed dataset once and only once
-    PointViewPtr tempFixed = fixed->makeNew();
-    for (PointId i = 0; i < moving->size(); ++i)
-    {
-        double x =
-            fixed->getFieldAs<double>(Dimension::Id::X, i) - centroid.x();
-        double y =
-            fixed->getFieldAs<double>(Dimension::Id::Y, i) - centroid.y();
-        double z =
-            fixed->getFieldAs<double>(Dimension::Id::Z, i) - centroid.z();
-        tempFixed->setField(Dimension::Id::X, i, x);
-        tempFixed->setField(Dimension::Id::Y, i, y);
-        tempFixed->setField(Dimension::Id::Z, i, z);
-    }
+    PointViewPtr tempFixed = fixed->demeanPointView();
 
     // construct KDtree of the fixed dataset so that the moving one can
     // search for the nearest point
