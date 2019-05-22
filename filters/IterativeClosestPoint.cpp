@@ -121,40 +121,17 @@ PointViewPtr IterativeClosestPoint::icp(PointViewPtr fixed,
     {
         // apply the previously computed transformation to demeaned moving
         // dataset
-        PointViewPtr tempMoving = moving->makeNew();
-        for (PointId i = 0; i < moving->size(); ++i)
-        {
-            double x =
-                moving->getFieldAs<double>(Dimension::Id::X, i) - centroid.x();
-            double y =
-                moving->getFieldAs<double>(Dimension::Id::Y, i) - centroid.y();
-            double z =
-                moving->getFieldAs<double>(Dimension::Id::Z, i) - centroid.z();
-            tempMoving->setField(Dimension::Id::X, i,
-                                 x * final_transformation.coeff(0, 0) +
-                                     y * final_transformation.coeff(0, 1) +
-                                     z * final_transformation.coeff(0, 2) +
-                                     final_transformation.coeff(0, 3));
-            tempMoving->setField(Dimension::Id::Y, i,
-                                 x * final_transformation.coeff(1, 0) +
-                                     y * final_transformation.coeff(1, 1) +
-                                     z * final_transformation.coeff(1, 2) +
-                                     final_transformation.coeff(1, 3));
-            tempMoving->setField(Dimension::Id::Z, i,
-                                 x * final_transformation.coeff(2, 0) +
-                                     y * final_transformation.coeff(2, 1) +
-                                     z * final_transformation.coeff(2, 2) +
-                                     final_transformation.coeff(2, 3));
-        }
+        PointViewPtr tempMoving = moving->demeanPointView();
+        PointViewPtr tempMovingTransformed = tempMoving->transform(final_transformation);
 
         // find correspondences and compute mean square error
         std::vector<PointId> fixed_idx;
         std::vector<PointId> moving_idx;
         double mse(0.0);
-        for (PointId i = 0; i < tempMoving->size(); ++i)
+        for (PointId i = 0; i < tempMovingTransformed->size(); ++i)
         {
             // find nearest neighbor
-            PointRef p = tempMoving->point(i);
+            PointRef p = tempMovingTransformed->point(i);
             std::vector<PointId> indices(1);
             std::vector<double> sqr_dists(1);
             kd_fixed.knnSearch(p, 1, &indices, &sqr_dists);
@@ -180,7 +157,7 @@ PointViewPtr IterativeClosestPoint::icp(PointViewPtr fixed,
         // estimate rigid transformation using Umeyama method (same thing PCL
         // did)
         auto A = eigen::pointViewToEigen(*tempFixed, fixed_idx);
-        auto B = eigen::pointViewToEigen(*tempMoving, moving_idx);
+        auto B = eigen::pointViewToEigen(*tempMovingTransformed, moving_idx);
         auto T = Eigen::umeyama(B.transpose(), A.transpose(), false);
         log()->get(LogLevel::Debug2) << "Current dx: " << T.coeff(0, 3) << ", "
                                      << "dy: " << T.coeff(1, 3) << std::endl;

@@ -296,6 +296,7 @@ public:
     KD2Index& build2dIndex();
 
     PointViewPtr demeanPointView();
+    PointViewPtr transform(std::array<double, 16> matrix);
 
 protected:
     PointTableRef m_pointTable;

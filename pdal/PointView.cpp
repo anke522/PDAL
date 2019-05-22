@@ -229,6 +229,25 @@ PointViewPtr PointView::demeanPointView()
 }
 
 
+PointViewPtr PointView::transform(std::array<double, 16> matrix)
+{
+    using namespace Dimension;
+   
+    PointViewPtr outView = makeNew();
+    for (PointId idx = 0; idx < size(); idx++)
+    {
+        double x = getFieldAs<double>(Id::X, idx);
+        double y = getFieldAs<double>(Id::Y, idx);
+        double z = getFieldAs<double>(Id::Z, idx);
+        outView->setField(Id::X, idx, x * matrix[0] + y * matrix[1] + z * matrix[2] + matrix[3]);
+        outView->setField(Id::Y, idx, x * matrix[4] + y * matrix[5] + z * matrix[6] + matrix[7]);
+        outView->setField(Id::Z, idx, x * matrix[8] + y * matrix[9] + z * matrix[10] + matrix[11]);
+    }
+    return outView;
+   
+}
+
+
 void PointView::dump(std::ostream& ostr) const
 {
     using std::endl;
