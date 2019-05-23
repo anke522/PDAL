@@ -116,12 +116,13 @@ bool TransformationFilter::processOne(PointRef& point)
 
 void TransformationFilter::filter(PointView& view)
 {
-    PointRef point(view, 0);
-    for (PointId idx = 0; idx < view.size(); ++idx)
-    {
-        point.setPointId(idx);
-        processOne(point);
-    }
+    view.transformInPlace(m_matrix.data());
+    //PointRef point(view, 0);
+    //for (PointId idx = 0; idx < view.size(); ++idx)
+    //{
+    //    point.setPointId(idx);
+    //    processOne(point);
+    //}
     view.invalidateProducts();
 }
 

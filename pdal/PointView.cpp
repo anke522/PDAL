@@ -229,22 +229,64 @@ PointViewPtr PointView::demeanPointView()
 }
 
 
-PointViewPtr PointView::transform(std::array<double, 16> matrix)
+PointViewPtr PointView::demeanPointView(double* centroid)
+{
+    using namespace Eigen;
+    using namespace Dimension;
+
+    PointViewPtr outView = makeNew();
+
+    for (PointId idx = 0; idx < size(); idx++)
+    {
+        double x = getFieldAs<double>(Id::X, idx) - centroid[0];
+        double y = getFieldAs<double>(Id::Y, idx) - centroid[1];
+        double z = getFieldAs<double>(Id::Z, idx) - centroid[2];
+        outView->setField(Id::X, idx, x);
+        outView->setField(Id::Y, idx, y);
+        outView->setField(Id::Z, idx, z);
+    }
+    return outView;
+}
+
+
+PointViewPtr PointView::transform(double* matrix)
 {
     using namespace Dimension;
-   
+
     PointViewPtr outView = makeNew();
     for (PointId idx = 0; idx < size(); idx++)
     {
         double x = getFieldAs<double>(Id::X, idx);
         double y = getFieldAs<double>(Id::Y, idx);
         double z = getFieldAs<double>(Id::Z, idx);
-        outView->setField(Id::X, idx, x * matrix[0] + y * matrix[1] + z * matrix[2] + matrix[3]);
-        outView->setField(Id::Y, idx, x * matrix[4] + y * matrix[5] + z * matrix[6] + matrix[7]);
-        outView->setField(Id::Z, idx, x * matrix[8] + y * matrix[9] + z * matrix[10] + matrix[11]);
+        outView->setField(Id::X, idx,
+                          x * matrix[0] + y * matrix[1] + z * matrix[2] + matrix[3]);
+        outView->setField(Id::Y, idx,
+                          x * matrix[4] + y * matrix[5] + z * matrix[6] + matrix[7]);
+        outView->setField(Id::Z, idx,
+                          x * matrix[8] + y * matrix[9] + z * matrix[10] + matrix[11]);
     }
     return outView;
    
+}
+
+
+void PointView::transformInPlace(double* matrix)
+{
+    using namespace Dimension;
+
+    for (PointId idx = 0; idx < size(); idx++)
+    {
+        double x = getFieldAs<double>(Id::X, idx);
+        double y = getFieldAs<double>(Id::Y, idx);
+        double z = getFieldAs<double>(Id::Z, idx);
+        setField(Id::X, idx,
+                 x * matrix[0] + y * matrix[1] + z * matrix[2] + matrix[3]);
+        setField(Id::Y, idx,
+                 x * matrix[4] + y * matrix[5] + z * matrix[6] + matrix[7]);
+        setField(Id::Z, idx,
+                 x * matrix[8] + y * matrix[9] + z * matrix[10] + matrix[11]);
+    }
 }
 
 

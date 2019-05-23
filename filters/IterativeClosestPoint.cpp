@@ -121,17 +121,19 @@ PointViewPtr IterativeClosestPoint::icp(PointViewPtr fixed,
     {
         // apply the previously computed transformation to demeaned moving
         // dataset
-        PointViewPtr tempMoving = moving->demeanPointView();
-        PointViewPtr tempMovingTransformed = tempMoving->transform(final_transformation);
+        PointViewPtr tempMoving = moving->demeanPointView(centroid.data());
+        tempMoving->transformInPlace(final_transformation.transpose().data());
+        //auto tempT = final_transformation;
+        //PointViewPtr tempMovingTransformed = tempMoving->transform(tempT.data());
 
         // find correspondences and compute mean square error
         std::vector<PointId> fixed_idx;
         std::vector<PointId> moving_idx;
         double mse(0.0);
-        for (PointId i = 0; i < tempMovingTransformed->size(); ++i)
+        for (PointId i = 0; i < tempMoving->size(); ++i)
         {
             // find nearest neighbor
-            PointRef p = tempMovingTransformed->point(i);
+            PointRef p = tempMoving->point(i);
             std::vector<PointId> indices(1);
             std::vector<double> sqr_dists(1);
             kd_fixed.knnSearch(p, 1, &indices, &sqr_dists);
@@ -157,7 +159,7 @@ PointViewPtr IterativeClosestPoint::icp(PointViewPtr fixed,
         // estimate rigid transformation using Umeyama method (same thing PCL
         // did)
         auto A = eigen::pointViewToEigen(*tempFixed, fixed_idx);
-        auto B = eigen::pointViewToEigen(*tempMovingTransformed, moving_idx);
+        auto B = eigen::pointViewToEigen(*tempMoving, moving_idx);
         auto T = Eigen::umeyama(B.transpose(), A.transpose(), false);
         log()->get(LogLevel::Debug2) << "Current dx: " << T.coeff(0, 3) << ", "
                                      << "dy: " << T.coeff(1, 3) << std::endl;
